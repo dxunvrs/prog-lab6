@@ -1,11 +1,12 @@
 package core;
 
-import commands.Command;
-import commands.Inject;
+import clientCommands.*;
 import exceptions.EndOfExecutionException;
+import exceptions.ScriptExecutionException;
 import network.Request;
+import network.RequestType;
 import network.Response;
-import utility.ExecutionResponse;
+import network.ResponseType;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -19,13 +20,10 @@ public class CommandManager {
     //private static final Logger logger = LoggerFactory.getLogger(CommandManager.class);
 
     private final Map<String, Command> commands = new HashMap<>();
-
     private final List<String> commandsHistory = new LinkedList<>();
 
-    //private final CollectionManager collectionManager;
     private final InputReader reader;
     private ConnectionManager connectionManager;
-    //private final FileManager fileManager;
 
     public CommandManager(InputReader reader) {
         this.reader = reader;
@@ -33,6 +31,25 @@ public class CommandManager {
 
     public void setConnectionManager(ConnectionManager connectionManager) {
         this.connectionManager = connectionManager;
+        syncCommands();
+    }
+
+    private void syncCommands() {
+        Response response = connectionManager.sendAndReceive(new Request(RequestType.SYNC, "get_commands"));
+        if (response.getType() != ResponseType.SYNC_DATA) {
+            System.out.println("Не удалось синхронизировать команды с сервером");
+            return;
+        }
+        response.getSyncData().forEach((name, commandDef) -> {
+            switch (commandDef.commandType()) {
+                case NO_ARGS -> addCommand(new NoArgsCommand(name, commandDef.description()));
+                case STRING_ARG -> addCommand(new StringArgCommand(name, commandDef.description()));
+                case INT_ARG -> addCommand(new IntArgCommand(name, commandDef.description()));
+                case OBJECT_ARG -> addCommand(new ObjectArgCommand(name, commandDef.description()));
+                case MIXED_ARGS -> addCommand(new MixedArgsCommand(name, commandDef.description()));
+                default -> System.out.println("Неизвестный тип команды, регистрация не удалась");
+            }
+        });
     }
 
     public boolean executeCommand(String line) {
@@ -40,8 +57,12 @@ public class CommandManager {
         Command command = commands.get(tokens[0]);
         if (command == null) {
             // logger.warn("Пользователь ввел некорректную команду {}", tokens[0]);
-            System.out.println("Команда " + tokens[0] + " не найдена");
-            return true;
+            syncCommands();
+            command = commands.get(tokens[0]);
+            if (command == null) {
+                System.out.println("Команда " + tokens[0] + " не найдена");
+                return true;
+            }
         }
         if (command.getExpectArgs() != tokens.length-1) {
             // logger.warn("Пользователь ввел неверное количество аргументов {} для команды {}", tokens.length-1, command.getName());
@@ -51,20 +72,25 @@ public class CommandManager {
         try {
             // logger.debug("Начало выполнения команды {}", command.getName());
 
-            ExecutionResponse executionResponse = command.execute(tokens);
-            System.out.println(executionResponse.message());
+            Request request = command.execute(tokens);
 
-            Request request = new Request(command.getName());
+            if (request.getType() == RequestType.CLIENT_COMMAND) {
+                System.out.println(request.getCommandName());
+                return true;
+            }
+
             Response response = connectionManager.sendAndReceive(request);
-            System.out.println("Ответ от сервера: " + response.getMessage() + ", успех: " + response.isSuccess());
 
-            // logger.info("Сообщение команды: {}", executionResponse.message());
+            if (response.getType() == ResponseType.OUTDATED) syncCommands();
+
+            System.out.println(response.getMessage() + " " + response.getType());
             addCommandToHistory(command.getName());
-            // logger.debug("Команда {} добавлена в историю", command.getName());
 
-            return !executionResponse.shouldExit();
-//        } catch (InvalidIdException | IdNotFoundException | SaveException | ScriptExecutionException e) {
-//            return notifyError(e);
+            return true;
+        } catch (ScriptExecutionException e) {
+            return notifyError("Ошибка выполнения скрипта: " + e.getMessage(), e);
+        } catch (NumberFormatException e) {
+            return notifyError("Неверный формат числа", e);
         } catch (EndOfExecutionException e) {
             // logger.info("Завершение программы", e);
             System.out.println(e.getMessage());
@@ -72,9 +98,9 @@ public class CommandManager {
         }
     }
 
-    private boolean notifyError(Exception e) {
+    private boolean notifyError(String message, Exception e) {
         // logger.error(e.getMessage(), e);
-        System.out.println(e.getMessage());
+        System.out.println(message);
         return true;
     }
 
@@ -128,9 +154,7 @@ public class CommandManager {
      */
     private Object resolveDependency(Class<?> type) {
         return switch (type.getSimpleName()) {
-            // case "CollectionManager" -> collectionManager;
             case "CommandManager" -> this;
-            // case "FileManager" -> fileManager;
             case "InputReader" -> reader;
             default -> null;
         };

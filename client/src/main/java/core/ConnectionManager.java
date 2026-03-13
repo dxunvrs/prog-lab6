@@ -4,17 +4,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import network.Request;
 import network.Response;
+import network.ResponseType;
 
 import java.io.IOException;
 import java.net.*;
 
-public class ConnectionManager {
+public class ConnectionManager implements AutoCloseable {
     private final String host;
     private final int port;
     private final DatagramSocket socket;
     private final ObjectMapper mapper;
 
-    private static final int MAX_ATTEMPTS = 5;
+    private static final int MAX_ATTEMPTS = 3;
     private static final int TIMEOUT = 3000;
     private static final int PACKET_SIZE = 65535;
 
@@ -39,12 +40,13 @@ public class ConnectionManager {
 
                 byte[] receiveBuffer = new byte[PACKET_SIZE];
                 DatagramPacket receivePacket = new DatagramPacket(receiveBuffer, receiveBuffer.length);
+
                 socket.receive(receivePacket);
 
                 return mapper.readValue(receivePacket.getData(), Response.class);
             } catch (SocketTimeoutException e) {
                 attempts++;
-                System.out.println("Сервер не отвечает");
+                System.out.println("Сервер не отвечает, попытка подключения: " + attempts + " из " + MAX_ATTEMPTS);
                 if (attempts < MAX_ATTEMPTS) {
                     try {
                         Thread.sleep(2000);
@@ -52,14 +54,14 @@ public class ConnectionManager {
                 }
             } catch (IOException e) {
                 System.out.println(e.getMessage());
-                System.out.println("Пока");
                 break;
             }
         }
 
-        return new Response("Не удалось получить ответ", false);
+        return new Response(ResponseType.ERROR, "Запрос не доставлен", false);
     }
 
+    @Override
     public void close() {
         if (socket != null && !socket.isClosed()) {
             socket.close();

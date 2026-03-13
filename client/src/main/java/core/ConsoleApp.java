@@ -1,6 +1,8 @@
 package core;
 
-import commands.HelpCommand;
+import clientCommands.ExitCommand;
+import clientCommands.HelpCommand;
+import clientCommands.HistoryCommand;
 import exceptions.EndOfInputException;
 
 import java.net.SocketException;
@@ -47,6 +49,8 @@ public class ConsoleApp {
 
     private void registerBaseCommands() {
         commandManager.addCommand(new HelpCommand());
+        commandManager.addCommand(new ExitCommand());
+        commandManager.addCommand(new HistoryCommand());
     }
 
 //    /**

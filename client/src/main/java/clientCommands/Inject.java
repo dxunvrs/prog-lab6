@@ -1,4 +1,4 @@
-package commands;
+package clientCommands;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

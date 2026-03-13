@@ -1,9 +1,23 @@
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import commands.CommandDef;
+import commands.CommandType;
+import network.Request;
+import network.RequestType;
+import network.Response;
+import network.ResponseType;
+
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MockServer {
     public static void main(String[] args) {
+        ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
+        Map<String, CommandDef> commands = new HashMap<>();
+        // commands.put("test", new CommandDef("test", "test - команда от сервера", 0, CommandType.NO_ARGS));
+
         int port = 1234;
         try (DatagramSocket socket = new DatagramSocket(port)) {
             System.out.println("Мок сервера запущен. Ожидание...");
@@ -13,14 +27,23 @@ public class MockServer {
                 DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
                 socket.receive(packet);
 
-                String receivedJson = new String(packet.getData(), 0, packet.getLength(), StandardCharsets.UTF_8);
+                Request request = mapper.readValue(packet.getData(), Request.class);
 
                 System.out.println("Новый запрос");
                 System.out.println("От: " + packet.getSocketAddress());
-                System.out.println("JSON: " + receivedJson);
+                System.out.println("JSON: " + request);
 
-                String responseJson = "{\"message\":\"JSON получен\",\"success\":true}";
-                byte[] responseData = responseJson.getBytes(StandardCharsets.UTF_8);
+                Response response;
+                if (request.getType() == RequestType.SYNC) {
+                    response = new Response(ResponseType.SYNC_DATA, "Синхронизация команд", true);
+                    response.setSyncData(commands);
+                } else if (request.getType() == RequestType.SERVER_COMMAND) {
+                    response = new Response(ResponseType.OK, "Старания были не напрасны, команда типо выполнилась", true);
+                } else {
+                    response = new Response(ResponseType.ERROR, "Неизвестный тип запроса", false);
+                }
+
+                byte[] responseData = mapper.writeValueAsBytes(response);
 
                 DatagramPacket responsePacket = new DatagramPacket(
                         responseData, responseData.length, packet.getSocketAddress()

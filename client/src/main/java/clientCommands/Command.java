@@ -1,6 +1,6 @@
-package commands;
+package clientCommands;
 
-import utility.ExecutionResponse;
+import network.Request;
 
 public abstract class Command {
     private final String name;
@@ -13,7 +13,7 @@ public abstract class Command {
         this.expectArgs = expectArgs;
     }
 
-    public abstract ExecutionResponse execute(String[] tokens);
+    public abstract Request execute(String[] tokens);
 
     public String getName() {
         return name;
