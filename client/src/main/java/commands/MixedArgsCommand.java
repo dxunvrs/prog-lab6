@@ -1,22 +1,23 @@
-package clientCommands;
+package commands;
 
 import core.InputReader;
 import network.Request;
 import network.RequestType;
 import utility.ProductForm;
 
-public class ObjectArgCommand extends Command {
+public class MixedArgsCommand extends Command {
     @Inject
     private InputReader inputReader;
 
-    public ObjectArgCommand(String name, String description) {
-        super(name, description, 0);
+    public MixedArgsCommand(String name, String description) {
+        super(name, description, 1);
     }
 
     @Override
     public Request execute(String[] tokens) {
-        ProductForm productForm = new ProductForm(inputReader);
         Request request = new Request(RequestType.SERVER_COMMAND, getName());
+        request.setIntArg(Integer.parseInt(tokens[1]));
+        ProductForm productForm = new ProductForm(inputReader);
         request.setObjectArg(productForm.getProduct());
         return request;
     }

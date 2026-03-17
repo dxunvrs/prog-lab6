@@ -1,4 +1,4 @@
-package clientCommands;
+package commands;
 
 import network.Request;
 import network.RequestType;

@@ -1,8 +1,7 @@
-package clientCommands;
+package commands;
 
 import core.CommandManager;
 import network.Request;
-import network.RequestType;
 
 public class HelpCommand extends Command {
     @Inject
@@ -14,6 +13,7 @@ public class HelpCommand extends Command {
 
     @Override
     public Request execute(String[] tokens) {
-        return new Request(RequestType.CLIENT_COMMAND, commandManager.getFormattedCommandsList());
+        System.out.println(commandManager.getFormattedCommandsList());
+        return null;
     }
 }

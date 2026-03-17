@@ -17,6 +17,7 @@ public class MockServer {
         ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
         Map<String, CommandDef> commands = new HashMap<>();
         // commands.put("test", new CommandDef("test", "test - команда от сервера", 0, CommandType.NO_ARGS));
+        commands.put("add", new CommandDef("add", "add - тестовое добавление", 0, CommandType.OBJECT_ARG));
 
         int port = 1234;
         try (DatagramSocket socket = new DatagramSocket(port)) {
@@ -31,16 +32,16 @@ public class MockServer {
 
                 System.out.println("Новый запрос");
                 System.out.println("От: " + packet.getSocketAddress());
-                System.out.println("JSON: " + request);
+                System.out.println("JSON: " + new String(packet.getData()));
 
                 Response response;
                 if (request.getType() == RequestType.SYNC) {
-                    response = new Response(ResponseType.SYNC_DATA, "Синхронизация команд", true);
+                    response = new Response(ResponseType.SYNC_DATA, "Синхронизация команд");
                     response.setSyncData(commands);
                 } else if (request.getType() == RequestType.SERVER_COMMAND) {
-                    response = new Response(ResponseType.OK, "Старания были не напрасны, команда типо выполнилась", true);
+                    response = new Response(ResponseType.OK, "Старания были не напрасны, команда типо выполнилась");
                 } else {
-                    response = new Response(ResponseType.ERROR, "Неизвестный тип запроса", false);
+                    response = new Response(ResponseType.ERROR, "Неизвестный тип запроса");
                 }
 
                 byte[] responseData = mapper.writeValueAsBytes(response);

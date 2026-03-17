@@ -1,17 +1,17 @@
-package clientCommands;
+package commands;
 
 import network.Request;
 import network.RequestType;
 
-public class IntArgCommand extends Command {
-    public IntArgCommand(String name, String description) {
-        super(name, description, 0);
+public class StringArgCommand extends Command {
+    public StringArgCommand(String name, String description) {
+        super(name, description, 1);
     }
 
     @Override
     public Request execute(String[] tokens) {
         Request request = new Request(RequestType.SERVER_COMMAND, getName());
-        request.setIntArg(Integer.parseInt(tokens[1]));
+        request.setStringArg(tokens[1]);
         return request;
     }
 }

@@ -8,25 +8,19 @@ import java.util.Map;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Response {
     private String message;
-    private boolean success;
     private ResponseType type;
 
     private Map<String, CommandDef> syncData;
 
     public Response() {}
 
-    public Response(ResponseType type, String message, boolean success) {
+    public Response(ResponseType type, String message) {
         this.type = type;
         this.message = message;
-        this.success = success;
     }
 
     public String getMessage() {
         return message;
-    }
-
-    public boolean isSuccess() {
-        return success;
     }
 
     public Map<String, CommandDef> getSyncData() {

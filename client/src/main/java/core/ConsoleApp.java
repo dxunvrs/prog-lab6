@@ -1,8 +1,8 @@
 package core;
 
-import clientCommands.ExitCommand;
-import clientCommands.HelpCommand;
-import clientCommands.HistoryCommand;
+import commands.ExitCommand;
+import commands.HelpCommand;
+import commands.HistoryCommand;
 import exceptions.EndOfInputException;
 
 import java.net.SocketException;
@@ -13,16 +13,16 @@ public class ConsoleApp {
 
     private boolean isWorking = true;
 
-    public ConsoleApp(String[] args) {
+    public ConsoleApp() {
         // checkArgs(args);
         // registerAllCommands();
         registerBaseCommands();
         try {
-            ConnectionManager connectionManager = new ConnectionManager("127.0.0.1", 1234);
+            ConnectionManager connectionManager = new ConnectionManager("localhost", 1234);
             commandManager.setConnectionManager(connectionManager);
-            System.out.println("Сервер подключен");
+            // System.out.println("Сервер подключен");
         } catch (SocketException e) {
-            System.out.println("Сервер недоступен");
+            System.out.println("Ошибка сокета: " + e.getMessage());
         }
     }
 

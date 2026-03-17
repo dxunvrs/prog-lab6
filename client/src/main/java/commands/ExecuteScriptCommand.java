@@ -1,4 +1,4 @@
-package clientCommands;
+package commands;
 
 public class ExecuteScriptCommand {
 }

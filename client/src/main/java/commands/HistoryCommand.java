@@ -1,4 +1,4 @@
-package clientCommands;
+package commands;
 
 import core.CommandManager;
 import network.Request;
@@ -14,6 +14,7 @@ public class HistoryCommand extends Command {
 
     @Override
     public Request execute(String[] tokens) {
-        return new Request(RequestType.CLIENT_COMMAND, commandManager.getFormattedHistory());
+        System.out.println(commandManager.getFormattedHistory());
+        return null;
     }
 }

@@ -1,4 +1,4 @@
-package clientCommands;
+package commands;
 
 import exceptions.EndOfExecutionException;
 import network.Request;

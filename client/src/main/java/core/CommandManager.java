@@ -1,6 +1,6 @@
 package core;
 
-import clientCommands.*;
+import commands.*;
 import exceptions.EndOfExecutionException;
 import exceptions.ScriptExecutionException;
 import network.Request;
@@ -74,17 +74,12 @@ public class CommandManager {
 
             Request request = command.execute(tokens);
 
-            if (request.getType() == RequestType.CLIENT_COMMAND) {
-                System.out.println(request.getCommandName());
-                return true;
-            }
+            if (request == null) return true;
 
             Response response = connectionManager.sendAndReceive(request);
-
-            if (response.getType() == ResponseType.OUTDATED) syncCommands();
-
             System.out.println(response.getMessage() + " " + response.getType());
             addCommandToHistory(command.getName());
+            if (response.getType() == ResponseType.OUTDATED) syncCommands();
 
             return true;
         } catch (ScriptExecutionException e) {

@@ -53,12 +53,12 @@ public class ConnectionManager implements AutoCloseable {
                     } catch (InterruptedException ignored) {}
                 }
             } catch (IOException e) {
-                System.out.println(e.getMessage());
+                System.out.println("Ошибка: " + e.getMessage());
                 break;
             }
         }
 
-        return new Response(ResponseType.ERROR, "Запрос не доставлен", false);
+        return new Response(ResponseType.ERROR, "Запрос не доставлен");
     }
 
     @Override
