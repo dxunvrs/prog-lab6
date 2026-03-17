@@ -1,5 +1,6 @@
 package core;
 
+import commands.ExecuteScriptCommand;
 import commands.ExitCommand;
 import commands.HelpCommand;
 import commands.HistoryCommand;
@@ -51,6 +52,7 @@ public class ConsoleApp {
         commandManager.addCommand(new HelpCommand());
         commandManager.addCommand(new ExitCommand());
         commandManager.addCommand(new HistoryCommand());
+        commandManager.addCommand(new ExecuteScriptCommand());
     }
 
 //    /**

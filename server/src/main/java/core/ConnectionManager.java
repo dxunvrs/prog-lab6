@@ -2,12 +2,8 @@ package core;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import commands.CommandDef;
-import commands.CommandType;
 import network.Request;
-import network.RequestType;
 import network.Response;
-import network.ResponseType;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -16,9 +12,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 
 public class ConnectionManager implements AutoCloseable {
     private final int port;
@@ -29,8 +23,11 @@ public class ConnectionManager implements AutoCloseable {
 
     private boolean isWorking = true;
 
-    public ConnectionManager(int port) {
+    private final CommandHandler commandHandler;
+
+    public ConnectionManager(int port, CommandHandler commandHandler) {
         this.port = port;
+        this.commandHandler = commandHandler;
         this.mapper = new ObjectMapper().registerModule(new JavaTimeModule());
     }
 
@@ -79,22 +76,7 @@ public class ConnectionManager implements AutoCloseable {
             System.out.println("От: " + clientAddress);
             System.out.println("JSON: " + new String(data));
 
-
-            Map<String, CommandDef> commands = new HashMap<>();
-            // commands.put("test", new CommandDef("test", "test - команда от сервера", 0, CommandType.NO_ARGS));
-            commands.put("add", new CommandDef("add", "add - тестовое добавление", 0, CommandType.OBJECT_ARG));
-
-            Response response;
-            if (request.getType() == RequestType.SYNC) {
-                response = new Response(ResponseType.SYNC_DATA, "Синхронизация команд");
-                response.setSyncData(commands);
-            } else if (request.getType() == RequestType.SERVER_COMMAND) {
-                response = new Response(ResponseType.OK, "Старания были не напрасны, команда типо выполнилась");
-            } else {
-                response = new Response(ResponseType.ERROR, "Неизвестный тип запроса");
-            }
-
-            send(clientAddress, response);
+            send(clientAddress, commandHandler.handle(request));
 
         } catch (IOException e) {
             System.out.println("Ошибка при чтении данных: " + e.getMessage());

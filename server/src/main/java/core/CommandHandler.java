@@ -1,7 +1,12 @@
 package core;
 
 import commands.Command;
+import commands.CommandDef;
 import commands.Inject;
+import exceptions.IdNotFoundException;
+import network.Request;
+import network.Response;
+import network.ResponseType;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -16,6 +21,47 @@ public class CommandHandler {
 
     public CommandHandler(CollectionManager collectionManager) {
         this.collectionManager = collectionManager;
+    }
+
+    public Response handle(Request request) {
+        switch (request.getType()) {
+            case SYNC -> {
+                return syncCommands();
+            }
+            case SERVER_COMMAND -> {
+                return executeCommand(request);
+            }
+            default -> {
+                return new Response(ResponseType.ERROR, "Неизвестный тип запроса");
+            }
+        }
+    }
+
+    private Response executeCommand(Request request) {
+        Command command = commands.get(request.getCommandName());
+        if (command == null) {
+            System.out.println("Команда не найдена");
+            return new Response(ResponseType.OUTDATED, "Данная команда больше не поддерживается");
+        }
+        try {
+            return command.execute(request);
+        } catch (IdNotFoundException e) {
+            return handleError(e);
+        }
+    }
+
+    private Response syncCommands() {
+        Map<String, CommandDef> commandDefMap = new HashMap<>();
+        commands.forEach((name, serverCommand) ->
+            commandDefMap.put(name, new CommandDef(serverCommand.getName(), serverCommand.getDescription(), serverCommand.getType()))
+        );
+        Response response = new Response(ResponseType.SYNC_DATA, "Актуальные команды");
+        response.setSyncData(commandDefMap);
+        return response;
+    }
+
+    private Response handleError(Exception e) {
+        return new Response(ResponseType.ERROR, e.getMessage());
     }
 
 //    public boolean executeCommand(String line) {
@@ -52,16 +98,7 @@ public class CommandHandler {
 //        }
 //    }
 
-    /**
-     * Метод для уведомления о некритичной ошибке
-     * @param e класс ошибки
-     * @return true для продолжения работы
-     */
-    private boolean notifyError(Exception e) {
-        // logger.error(e.getMessage(), e);
-        System.out.println(e.getMessage());
-        return true;
-    }
+
 
 
     public void addCommand(Command command) {
@@ -85,7 +122,7 @@ public class CommandHandler {
                 // logger.error("Не удалось внедрить зависимость в поле {}", field.getName(), e);
             }
         }
-        // commands.put(command.getName(), command);
+        commands.put(command.getName(), command);
         // logger.info("Команда {} зарегистрирована", command.getName());
     }
 
@@ -96,32 +133,4 @@ public class CommandHandler {
             default -> null;
         };
     }
-
-//    public void startConsoleThread() {
-//        Thread consoleThread = new Thread(() -> {
-//            Scanner scanner = new Scanner(System.in);
-//            while (!Thread.currentThread().isInterrupted()) {
-//                if (scanner.hasNextLine()) {
-//                    String line = scanner.nextLine().trim();
-//                    if (line.equals("save")) {
-//                        collectionManager.saveToFile(); // Сервер сохраняет коллекцию
-//                        System.out.println("Коллекция успешно сохранена в файл.");
-//                    } else if (line.equals("exit")) {
-//                        collectionManager.saveToFile();
-//                        System.out.println("Коллекция сохранена. Завершение работы...");
-//                        System.exit(0);
-//                    } else {
-//                        System.out.println("Сервер поддерживает только команды: save, exit");
-//                    }
-//                }
-//            }
-//        });
-//        consoleThread.setDaemon(true); // Чтобы поток не мешал закрытию программы
-//        consoleThread.start();
-//    }
-
-//    Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-//        System.out.println("Emergency save...");
-//        collectionManager.save();
-//    }));
 }

@@ -5,7 +5,7 @@ import network.RequestType;
 
 public class IntArgCommand extends Command {
     public IntArgCommand(String name, String description) {
-        super(name, description, 0);
+        super(name, description, 1);
     }
 
     @Override

@@ -41,7 +41,7 @@ public class CommandManager {
             return;
         }
         response.getSyncData().forEach((name, commandDef) -> {
-            switch (commandDef.commandType()) {
+            switch (commandDef.type()) {
                 case NO_ARGS -> addCommand(new NoArgsCommand(name, commandDef.description()));
                 case STRING_ARG -> addCommand(new StringArgCommand(name, commandDef.description()));
                 case INT_ARG -> addCommand(new IntArgCommand(name, commandDef.description()));
@@ -77,9 +77,14 @@ public class CommandManager {
             if (request == null) return true;
 
             Response response = connectionManager.sendAndReceive(request);
-            System.out.println(response.getMessage() + " " + response.getType());
+            System.out.println("Статус: " + response.getType());
+            System.out.println(response.getMessage());
+
+            if (response.getType() == ResponseType.OUTDATED) {
+                syncCommands();
+                return true;
+            }
             addCommandToHistory(command.getName());
-            if (response.getType() == ResponseType.OUTDATED) syncCommands();
 
             return true;
         } catch (ScriptExecutionException e) {
@@ -144,9 +149,6 @@ public class CommandManager {
         // logger.info("Команда {} зарегистрирована", command.getName());
     }
 
-    /**
-     * Решение зависимости
-     */
     private Object resolveDependency(Class<?> type) {
         return switch (type.getSimpleName()) {
             case "CommandManager" -> this;

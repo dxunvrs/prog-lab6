@@ -1,3 +1,4 @@
 package commands;
 
-public record CommandDef(String name, String description, int expectedArgs, CommandType commandType) {}
+public record CommandDef(String name, String description, CommandType type) {
+}

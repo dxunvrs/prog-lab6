@@ -5,6 +5,7 @@ import exceptions.ScriptExecutionException;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.*;
 
 public class InputReader {
@@ -19,24 +20,15 @@ public class InputReader {
     }
     // private final Logger logger = LoggerFactory.getLogger(InputReader.class);
 
-    /**
-     * История выполнения скриптов в рамках одной команды execute_script
-     */
     private final Set<String> pathHistory = new HashSet<>();
 
-    /**
-     * Очередь источников для выполнения
-     */
     private final Deque<ScriptSource> sourceDeque = new ArrayDeque<>();
 
     public InputReader() {
         sourceDeque.push(new ScriptSource(new Scanner(System.in), null));
     }
 
-    /**
-     * Добавление скрипта в очередь
-     */
-    public void enqueueScript(String fileName) throws FileNotFoundException {
+    public void enqueueScript(String fileName) throws IOException {
         if (pathHistory.contains(fileName)) {
             throw new ScriptExecutionException("Обнаружена рекурсия, файл: " + fileName);
         }
@@ -46,10 +38,6 @@ public class InputReader {
         //logger.debug("В очередь добавлен новый скрипт {}", fileName);
     }
 
-    /**
-     * Получение следующей строки
-     * @param prompt шаблон для начала строки
-     */
     public String readNextLine(String prompt) {
         while (!sourceDeque.isEmpty()) {
             System.out.print(prompt);
@@ -74,10 +62,6 @@ public class InputReader {
         throw new EndOfInputException("Чтение из пустой очереди");
     }
 
-    /**
-     * Получение режима работы программы
-     * @return true, если программа выполняет скрипт, иначе - false
-     */
     public boolean isScriptMode() {
         return sourceDeque.size() != 1;
     }
