@@ -1,6 +1,6 @@
 package utility;
 
-import core.InputReader;
+import io.InputManager;
 import exceptions.EndOfExecutionException;
 import exceptions.EndOfInputException;
 import exceptions.ScriptExecutionException;
@@ -9,31 +9,26 @@ import models.UnitOfMeasure;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Form {
     //private static final Logger logger = LoggerFactory.getLogger(Form.class);
-    private final InputReader reader;
+    private final InputManager reader;
     private final boolean scriptMode;
 
-    public Form(InputReader reader) {
+    public Form(InputManager reader) {
         this.reader = reader;
         this.scriptMode = reader.isScriptMode();
     }
 
-    /**
-     * Метод запроса одного значения, реализовано дженериком
-     * @param type тип значения
-     * @param name название запрашиваемой величины
-     * @param validator объект, реализующий валидатор для заданного типа
-     * @return Значение, удовлетворяющее типу и условиям валидатора. Ввод продолжится, пока не будет валидного значения
-     * @param <T> дженерик
-     */
     protected <T> T ask(Class<T> type, String name, Validator<T> validator) {
         T result;
         while (true) {
             try {
                 // logger.info("У пользователя запрашивается {} типа {}", name, type.getSimpleName());
-                result = map(type, reader.readNextLine("Введите " + name + ": "));
+                result = map(type, reader.readNextLine("Введите " + name + ": ", getSuggestions(type)));
                 if (validator.validate(result)) {
                     if (scriptMode) System.out.println(result);
                     break;
@@ -67,16 +62,18 @@ public class Form {
             case "Long", "long" -> type.cast(Long.parseLong(value));
             case "String" -> type.cast(value);
             case "LocalDate" -> type.cast(LocalDate.parse(value));
-            case "UnitOfMeasure" -> type.cast(UnitOfMeasure.valueOf(value.toUpperCase()));
+            case "UnitOfMeasure" -> type.cast(UnitOfMeasure.valueOf(value.trim().toUpperCase()));
             default -> throw new TypeNotFoundException("Тип еще не поддерживается");
         };
     }
 
-    /**
-     * Метод для обработки ошибок
-     * @param message сообщение ошибки
-     * @param e класс ошибки
-     */
+    private <T> Set<String> getSuggestions(Class<T> type) {
+        return switch (type.getSimpleName()) {
+            case "UnitOfMeasure" -> Arrays.stream(UnitOfMeasure.values()).map(Enum::name).collect(Collectors.toSet());
+            default -> null;
+        };
+    }
+
     private void handleError(String message, Exception e) {
         if (scriptMode) {
             throw new ScriptExecutionException(message);

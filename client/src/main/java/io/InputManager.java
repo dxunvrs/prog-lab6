@@ -1,20 +1,22 @@
-package core;
+package io;
 
 import exceptions.EndOfInputException;
 import exceptions.ScriptExecutionException;
+import io.readers.ConsoleReader;
+import io.readers.FileReader;
+import io.readers.Reader;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Supplier;
 
-public class InputReader {
+public class InputManager {
     private static class ScriptSource {
-        Scanner scanner;
+        Reader reader;
         String fileName;
 
-        ScriptSource(Scanner scanner, String fileName) {
-            this.scanner = scanner;
+        ScriptSource(Reader reader, String fileName) {
+            this.reader = reader;
             this.fileName = fileName;
         }
     }
@@ -24,31 +26,38 @@ public class InputReader {
 
     private final Deque<ScriptSource> sourceDeque = new ArrayDeque<>();
 
-    public InputReader() {
-        sourceDeque.push(new ScriptSource(new Scanner(System.in), null));
+    public InputManager(Supplier<Set<String>> commandsSupplier) {
+        //sourceDeque.push(new ScriptSource(new Scanner(System.in), null));
+        try {
+            sourceDeque.push(new ScriptSource(new ConsoleReader(commandsSupplier), null));
+        } catch (IOException e) {
+            System.out.println("Не удалось открыть консоль");
+        }
     }
 
     public void enqueueScript(String fileName) throws IOException {
         if (pathHistory.contains(fileName)) {
             throw new ScriptExecutionException("Обнаружена рекурсия, файл: " + fileName);
         }
-        sourceDeque.push(new ScriptSource(new Scanner(new File(fileName)),fileName));
+        sourceDeque.push(new ScriptSource(new FileReader(fileName), fileName));
 
         pathHistory.add(fileName);
         //logger.debug("В очередь добавлен новый скрипт {}", fileName);
     }
 
-    public String readNextLine(String prompt) {
-        while (!sourceDeque.isEmpty()) {
-            System.out.print(prompt);
+    public String readNextLine(String prompt, Set<String> suggestions, boolean isCommandMode) {
+        Objects.requireNonNull(sourceDeque.peekFirst()).reader.setSuggestions(suggestions);
+        Objects.requireNonNull(sourceDeque.peekFirst()).reader.setCommandMode(isCommandMode);
 
+        while (!sourceDeque.isEmpty()) {
             ScriptSource currentSource = sourceDeque.peek();
-            Scanner currentScanner = Objects.requireNonNull(currentSource).scanner;
-            if (currentScanner.hasNextLine()) {
-                return currentScanner.nextLine();
+            Reader currentReader = Objects.requireNonNull(currentSource).reader;
+            if (currentReader.hasNextLine()) {
+                String currentLine = currentReader.nextLine(prompt);
+                if (currentLine != null) return currentLine;
             }
             if (sourceDeque.size() > 1) {
-                currentScanner.close();
+                currentReader.close();
                 ScriptSource finishedSource = sourceDeque.pop();
                 pathHistory.remove(finishedSource.fileName);
 
@@ -61,6 +70,15 @@ public class InputReader {
         }
         throw new EndOfInputException("Чтение из пустой очереди");
     }
+
+    public String readNextLine(String prompt, Set<String> suggestions) { // data
+        return readNextLine(prompt, suggestions, false);
+    }
+
+    public String readNextLine(String prompt, boolean isCommandMode) { // commands
+        return readNextLine(prompt, null, isCommandMode);
+    }
+
 
     public boolean isScriptMode() {
         return sourceDeque.size() != 1;

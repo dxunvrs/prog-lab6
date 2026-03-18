@@ -3,16 +3,14 @@ package core;
 import commands.*;
 import exceptions.EndOfExecutionException;
 import exceptions.ScriptExecutionException;
+import io.InputManager;
 import network.Request;
 import network.RequestType;
 import network.Response;
 import network.ResponseType;
 
 import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -22,11 +20,20 @@ public class CommandManager {
     private final Map<String, Command> commands = new HashMap<>();
     private final List<String> commandsHistory = new LinkedList<>();
 
-    private final InputReader reader;
+    private InputManager inputManager;
     private ConnectionManager connectionManager;
 
-    public CommandManager(InputReader reader) {
-        this.reader = reader;
+    public void configure() {
+        addCommand(new HelpCommand());
+        addCommand(new ExitCommand());
+        addCommand(new HistoryCommand());
+        addCommand(new ExecuteScriptCommand());
+
+        syncCommands();
+    }
+
+    public void setInputManager(InputManager inputManager) {
+        this.inputManager = inputManager;
     }
 
     public void setConnectionManager(ConnectionManager connectionManager) {
@@ -124,6 +131,10 @@ public class CommandManager {
         return "Последние 15 команд:" + "\n" + result;
     }
 
+    public Set<String> getCommandNames() {
+        return commands.keySet();
+    }
+
     public void addCommand(Command command) {
         // logger.debug("Регистрация новой команды: {}", command.getName());
         Field[] fields = command.getClass().getDeclaredFields();
@@ -152,7 +163,7 @@ public class CommandManager {
     private Object resolveDependency(Class<?> type) {
         return switch (type.getSimpleName()) {
             case "CommandManager" -> this;
-            case "InputReader" -> reader;
+            case "InputManager" -> inputManager;
             default -> null;
         };
     }

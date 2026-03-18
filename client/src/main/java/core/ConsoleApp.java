@@ -1,26 +1,24 @@
 package core;
 
-import commands.ExecuteScriptCommand;
-import commands.ExitCommand;
-import commands.HelpCommand;
-import commands.HistoryCommand;
 import exceptions.EndOfInputException;
+import io.InputManager;
 
 import java.net.SocketException;
 
 public class ConsoleApp {
-    private final InputReader inputReader = new InputReader();
-    private final CommandManager commandManager = new CommandManager(inputReader);
+    private final CommandManager commandManager = new CommandManager();
+    private final InputManager inputManager = new InputManager(commandManager::getCommandNames);
 
     private boolean isWorking = true;
 
     public ConsoleApp() {
         // checkArgs(args);
         // registerAllCommands();
-        registerBaseCommands();
         try {
             ConnectionManager connectionManager = new ConnectionManager("localhost", 1234);
             commandManager.setConnectionManager(connectionManager);
+            commandManager.setInputManager(inputManager);
+            commandManager.configure();
             // System.out.println("Сервер подключен");
         } catch (SocketException e) {
             System.out.println("Ошибка сокета: " + e.getMessage());
@@ -31,10 +29,10 @@ public class ConsoleApp {
         System.out.println("Ожидание ввода команды, для списка доступных команд - help");
         while (isWorking) {
             try {
-                String line = inputReader.readNextLine("> ");
+                String line = inputManager.readNextLine("> ", true);
                 String formattedLine = line.trim().replaceAll("\\s+", " ");
 
-                if (inputReader.isScriptMode()) System.out.println(formattedLine); // для режима скрипта
+                if (inputManager.isScriptMode()) System.out.println(formattedLine); // для режима скрипта
 
                 if (formattedLine.isEmpty()) continue;
 
@@ -48,12 +46,12 @@ public class ConsoleApp {
         }
     }
 
-    private void registerBaseCommands() {
-        commandManager.addCommand(new HelpCommand());
-        commandManager.addCommand(new ExitCommand());
-        commandManager.addCommand(new HistoryCommand());
-        commandManager.addCommand(new ExecuteScriptCommand());
-    }
+//    private void registerBaseCommands() {
+//        commandManager.addCommand(new HelpCommand());
+//        commandManager.addCommand(new ExitCommand());
+//        commandManager.addCommand(new HistoryCommand());
+//        commandManager.addCommand(new ExecuteScriptCommand());
+//    }
 
 //    /**
 //     * Проверка аргументов запуска программы

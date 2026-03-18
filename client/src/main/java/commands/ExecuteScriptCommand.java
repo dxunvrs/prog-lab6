@@ -1,6 +1,6 @@
 package commands;
 
-import core.InputReader;
+import io.InputManager;
 import exceptions.ScriptExecutionException;
 import network.Request;
 
@@ -8,7 +8,7 @@ import java.io.IOException;
 
 public class ExecuteScriptCommand extends Command {
     @Inject
-    private InputReader inputReader;
+    private InputManager inputManager;
 
     public ExecuteScriptCommand() {
         super("execute_script", "execute_script - выполнение скрипта из файла", 1);
@@ -17,7 +17,7 @@ public class ExecuteScriptCommand extends Command {
     @Override
     public Request execute(String[] tokens) {
         try {
-            inputReader.enqueueScript(tokens[1]);
+            inputManager.enqueueScript(tokens[1]);
             System.out.println("Начало выполнения скрипта: " + tokens[1]);
         } catch (IOException e) {
             throw new ScriptExecutionException("Ошибка чтения " + e.getMessage());

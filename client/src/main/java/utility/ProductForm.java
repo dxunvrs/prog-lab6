@@ -1,6 +1,6 @@
 package utility;
 
-import core.InputReader;
+import io.InputManager;
 import models.Coordinates;
 import models.Person;
 import models.Product;
@@ -9,7 +9,7 @@ import models.UnitOfMeasure;
 import java.time.LocalDate;
 
 public class ProductForm extends Form {
-    public ProductForm(InputReader reader) {
+    public ProductForm(InputManager reader) {
         super(reader);
     }
 

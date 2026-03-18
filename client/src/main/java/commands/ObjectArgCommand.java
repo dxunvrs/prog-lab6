@@ -1,13 +1,13 @@
 package commands;
 
-import core.InputReader;
+import io.InputManager;
 import network.Request;
 import network.RequestType;
 import utility.ProductForm;
 
 public class ObjectArgCommand extends Command {
     @Inject
-    private InputReader inputReader;
+    private InputManager inputManager;
 
     public ObjectArgCommand(String name, String description) {
         super(name, description, 0);
@@ -15,7 +15,7 @@ public class ObjectArgCommand extends Command {
 
     @Override
     public Request execute(String[] tokens) {
-        ProductForm productForm = new ProductForm(inputReader);
+        ProductForm productForm = new ProductForm(inputManager);
         Request request = new Request(RequestType.SERVER_COMMAND, getName());
         request.setObjectArg(productForm.getProduct());
         return request;
