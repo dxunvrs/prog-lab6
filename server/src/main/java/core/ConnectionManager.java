@@ -15,9 +15,8 @@ import java.nio.channels.Selector;
 import java.util.Iterator;
 
 public class ConnectionManager implements AutoCloseable {
-    private final int port;
-    private DatagramChannel channel;
-    private Selector selector;
+    private final DatagramChannel channel;
+    private final Selector selector;
     private final ObjectMapper mapper;
     private final ByteBuffer readBuffer = ByteBuffer.allocate(65535);
 
@@ -25,23 +24,20 @@ public class ConnectionManager implements AutoCloseable {
 
     private final CommandHandler commandHandler;
 
-    public ConnectionManager(int port, CommandHandler commandHandler) {
-        this.port = port;
+    public ConnectionManager(int port, CommandHandler commandHandler) throws IOException {
         this.commandHandler = commandHandler;
         this.mapper = new ObjectMapper().registerModule(new JavaTimeModule());
-    }
 
-    public void start() throws IOException {
         selector = Selector.open();
         channel = DatagramChannel.open();
-
         channel.configureBlocking(false);
         channel.bind(new InetSocketAddress(port));
-
         channel.register(selector, SelectionKey.OP_READ);
 
         System.out.println("Сервер запущен на порту " + port);
+    }
 
+    public void start() throws IOException {
         while (isWorking) {
             if (selector.select() == 0) continue;
 

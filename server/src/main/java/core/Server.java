@@ -10,21 +10,11 @@ public class Server {
     private final FileManager fileManager = new FileManager();
     private final CommandHandler commandHandler = new CommandHandler(collectionManager);
 
-    public Server(String[] args) {
-        checkArgs(args);
-        registerAllCommands();
-    }
-
-    public void launch() {
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            System.out.println("\nСохранение коллекции");
-            synchronized (collectionManager) {
-                fileManager.save(collectionManager);
-            }
-            System.out.println("Завершение работы...");
-        }));
-
+    public void launch(String[] args) {
         try (ConnectionManager connectionManager = new ConnectionManager(1234, commandHandler)) {
+            checkArgs(args);
+            registerAllCommands();
+            registerShutdownHook();
             startConsoleThread(connectionManager);
             connectionManager.start();
         } catch (IOException e) {
@@ -54,11 +44,21 @@ public class Server {
         consoleThread.start();
     }
 
+    private void registerShutdownHook() {
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            System.out.println("\nСохранение коллекции");
+            synchronized (collectionManager) {
+                fileManager.save(collectionManager);
+            }
+            System.out.println("Завершение работы...");
+        }));
+    }
+
     private void checkArgs(String[] args) {
         if (args.length == 0) {
             System.out.println("Имя файла не указано, создана новая коллекция");
         } else {
-            if (args.length == 1) System.out.println("Указано больше одного аргумента, в качестве имени файла взят первый");
+            if (args.length > 1) System.out.println("Указано больше одного аргумента, в качестве имени файла взят первый");
             fileManager.setFileName(args[0]);
             fileManager.load(collectionManager);
         }
