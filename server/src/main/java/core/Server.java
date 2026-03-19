@@ -1,11 +1,15 @@
 package core;
 
 import commands.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Scanner;
 
 public class Server {
+    private static final Logger logger = LoggerFactory.getLogger(Server.class);
+
     private final CollectionManager collectionManager = new CollectionManager();
     private final FileManager fileManager = new FileManager();
     private final CommandHandler commandHandler = new CommandHandler(collectionManager);
@@ -18,6 +22,7 @@ public class Server {
             startConsoleThread(connectionManager);
             connectionManager.start();
         } catch (IOException e) {
+            logger.error("Ошибка", e);
             System.out.println("Ошибка: " + e.getMessage());
         }
     }
@@ -50,6 +55,7 @@ public class Server {
             synchronized (collectionManager) {
                 fileManager.save(collectionManager);
             }
+            logger.info("Завершение работы сервера");
             System.out.println("Завершение работы...");
         }));
     }

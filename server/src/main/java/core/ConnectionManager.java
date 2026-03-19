@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import network.Request;
 import network.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -15,6 +17,8 @@ import java.nio.channels.Selector;
 import java.util.Iterator;
 
 public class ConnectionManager implements AutoCloseable {
+    private static final Logger logger = LoggerFactory.getLogger(ConnectionManager.class);
+
     private final DatagramChannel channel;
     private final Selector selector;
     private final ObjectMapper mapper;
@@ -34,6 +38,8 @@ public class ConnectionManager implements AutoCloseable {
         channel.bind(new InetSocketAddress(port));
         channel.register(selector, SelectionKey.OP_READ);
 
+        logger.debug("Селектор и канал датаграммы открыты");
+        logger.info("Сервер запущен на порту {}", port);
         System.out.println("Сервер запущен на порту " + port);
     }
 
@@ -68,6 +74,7 @@ public class ConnectionManager implements AutoCloseable {
             readBuffer.get(data);
 
             Request request = mapper.readValue(data, Request.class);
+            logger.info("Получен новый запрос от {}, сообщение: {}", clientAddress, new String(data));
             System.out.println("Новый запрос");
             System.out.println("От: " + clientAddress);
             System.out.println("JSON: " + new String(data));
@@ -75,7 +82,8 @@ public class ConnectionManager implements AutoCloseable {
             send(clientAddress, commandHandler.handle(request));
 
         } catch (IOException e) {
-            System.out.println("Ошибка при чтении данных: " + e.getMessage());
+            logger.error("Ошибка при работе с данными", e);
+            System.out.println("Ошибка при работе с данными: " + e.getMessage());
         }
     }
 
@@ -84,6 +92,7 @@ public class ConnectionManager implements AutoCloseable {
         ByteBuffer buffer = ByteBuffer.wrap(data);
 
         channel.send(buffer, clientAddress);
+        logger.info("Отправлен ответ на {}, сообщение: {}", clientAddress, new String(data));
     }
 
     public void stop() {

@@ -13,9 +13,6 @@ public class ProductForm extends Form {
         super(reader);
     }
 
-    /**
-     * Метод получения продукта
-     */
     public Product getProduct() {
         String name = ask(String.class, "название", value -> {
             if (value == null) {

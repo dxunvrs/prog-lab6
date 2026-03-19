@@ -2,7 +2,6 @@ package commands;
 
 import core.CommandManager;
 import network.Request;
-import network.RequestType;
 
 public class HistoryCommand extends Command {
     @Inject

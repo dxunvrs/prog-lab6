@@ -39,7 +39,6 @@ public class Request {
         return intArg;
     }
 
-
     public void setStringArg(String value) {
         stringArg = value;
     }

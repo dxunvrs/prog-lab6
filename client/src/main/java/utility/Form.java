@@ -6,6 +6,8 @@ import exceptions.EndOfInputException;
 import exceptions.ScriptExecutionException;
 import exceptions.TypeNotFoundException;
 import models.UnitOfMeasure;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
@@ -14,7 +16,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class Form {
-    //private static final Logger logger = LoggerFactory.getLogger(Form.class);
+    private static final Logger logger = LoggerFactory.getLogger(Form.class);
+
     private final InputManager reader;
     private final boolean scriptMode;
 
@@ -27,13 +30,13 @@ public class Form {
         T result;
         while (true) {
             try {
-                // logger.info("У пользователя запрашивается {} типа {}", name, type.getSimpleName());
+                logger.info("У пользователя запрашивается {} типа {}", name, type.getSimpleName());
                 result = map(type, reader.readNextLine("Введите " + name + ": ", getSuggestions(type)));
                 if (validator.validate(result)) {
                     if (scriptMode) System.out.println(result);
                     break;
                 }
-                // logger.error("Значение не прошло валидацию");
+                logger.debug("Значение не прошло валидацию");
 
             } catch (EndOfInputException e) {
                 if (scriptMode) throw new ScriptExecutionException("Получен конец ввода, ожидались данные типа " + type.getSimpleName());
@@ -78,7 +81,7 @@ public class Form {
         if (scriptMode) {
             throw new ScriptExecutionException(message);
         }
-        // logger.error(message, e);
+        logger.warn(message, e);
         System.out.println(message);
     }
 }

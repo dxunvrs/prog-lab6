@@ -2,6 +2,8 @@ package core;
 
 import exceptions.IdNotFoundException;
 import models.Product;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -14,7 +16,8 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class CollectionManager {
-    //private static final Logger logger = LoggerFactory.getLogger(CollectionManager.class);
+    private static final Logger logger = LoggerFactory.getLogger(CollectionManager.class);
+
     private final List<Product> collection = new LinkedList<>();
     private LocalDateTime dateOfInit = LocalDateTime.now();
 
@@ -23,30 +26,30 @@ public class CollectionManager {
     public void initCollection(LocalDateTime dateOfInit) {
         this.dateOfInit = dateOfInit;
         lastId = collection.stream().mapToInt(Product::getId).max().orElse(0);
-        // logger.info("Инициализация коллекции, последний id: {}, дата: {}", lastId, dateOfInit);
+        logger.info("Инициализация коллекции, последний id: {}, дата: {}", lastId, dateOfInit);
     }
 
     public void sort() {
         Collections.sort(collection);
-        // logger.info("Коллекция отсортирована в естественном порядке");
+        logger.info("Коллекция отсортирована в естественном порядке");
     }
 
     public void randomSort() {
         Collections.shuffle(collection);
-        // logger.info("Коллекция отсортирована в случайном порядке");
+        logger.info("Коллекция отсортирована в случайном порядке");
     }
 
     public void addProduct(Product product) {
         product.setId(++lastId);
         product.setCreationDate(new Date());
         collection.add(product);
-        // logger.info("В коллекцию добавлен новый продукт {}", product);
+        logger.info("В коллекцию добавлен новый продукт {}", product);
     }
 
     public void removeProductById(int id) {
         boolean removed = collection.removeIf(product -> product.getId()==id);
         if (!removed) throw new IdNotFoundException("Нет такого id");
-        // logger.info("Из коллекции удален элемент с id {}", id);
+        logger.info("Из коллекции удален элемент с id {}", id);
     }
 
     public void updateProductById(int id, Product newProduct) {
@@ -55,12 +58,12 @@ public class CollectionManager {
                 .findFirst()
                 .orElseThrow(() -> new IdNotFoundException("Нет такого id"));
         updatedProduct.update(newProduct);
-        // logger.info("Элемент с id {} обновлен, новое значение {}", id, newProduct);
+        logger.info("Элемент с id {} обновлен, новое значение {}", id, newProduct);
     }
 
     public void clearCollection() {
         collection.clear();
-        // logger.info("Коллекция очищена");
+        logger.info("Коллекция очищена");
     }
 
     public LocalDateTime getDateOfInit() {

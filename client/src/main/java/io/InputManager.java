@@ -5,6 +5,8 @@ import exceptions.ScriptExecutionException;
 import io.readers.ConsoleReader;
 import io.readers.FileReader;
 import io.readers.Reader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;
@@ -20,17 +22,18 @@ public class InputManager {
             this.fileName = fileName;
         }
     }
-    // private final Logger logger = LoggerFactory.getLogger(InputReader.class);
+
+    private final Logger logger = LoggerFactory.getLogger(InputManager.class);
 
     private final Set<String> pathHistory = new HashSet<>();
 
     private final Deque<ScriptSource> sourceDeque = new ArrayDeque<>();
 
     public InputManager(Supplier<Set<String>> commandsSupplier) {
-        //sourceDeque.push(new ScriptSource(new Scanner(System.in), null));
         try {
             sourceDeque.push(new ScriptSource(new ConsoleReader(commandsSupplier), null));
         } catch (IOException e) {
+            logger.error("Не удалось открыть JLine консоль", e);
             System.out.println("Не удалось открыть консоль");
         }
     }
@@ -42,7 +45,7 @@ public class InputManager {
         sourceDeque.push(new ScriptSource(new FileReader(fileName), fileName));
 
         pathHistory.add(fileName);
-        //logger.debug("В очередь добавлен новый скрипт {}", fileName);
+        logger.info("В очередь добавлен новый скрипт {}", fileName);
     }
 
     public String readNextLine(String prompt, Set<String> suggestions, boolean isCommandMode) {
@@ -61,7 +64,7 @@ public class InputManager {
                 ScriptSource finishedSource = sourceDeque.pop();
                 pathHistory.remove(finishedSource.fileName);
 
-                //logger.info("Скрипт {} завершен, возвращение к предыдущему источнику", finishedSource.fileName);
+                logger.info("Скрипт {} завершен, возвращение к предыдущему источнику", finishedSource.fileName);
                 System.out.println("Конец выполнения скрипта " + finishedSource.fileName);
                 continue;
             }
@@ -78,7 +81,6 @@ public class InputManager {
     public String readNextLine(String prompt, boolean isCommandMode) { // commands
         return readNextLine(prompt, null, isCommandMode);
     }
-
 
     public boolean isScriptMode() {
         return sourceDeque.size() != 1;

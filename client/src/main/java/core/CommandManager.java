@@ -8,6 +8,8 @@ import network.Request;
 import network.RequestType;
 import network.Response;
 import network.ResponseType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -15,7 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class CommandManager {
-    //private static final Logger logger = LoggerFactory.getLogger(CommandManager.class);
+    private static final Logger logger = LoggerFactory.getLogger(CommandManager.class);
 
     private final Map<String, Command> commands = new HashMap<>();
     private final List<String> commandsHistory = new LinkedList<>();
@@ -38,10 +40,10 @@ public class CommandManager {
 
     public void setConnectionManager(ConnectionManager connectionManager) {
         this.connectionManager = connectionManager;
-        syncCommands();
     }
 
     private void syncCommands() {
+        logger.debug("Запущена синхронизация команд");
         Response response = connectionManager.sendAndReceive(new Request(RequestType.SYNC, "get_commands"));
         if (response.getType() != ResponseType.SYNC_DATA) {
             System.out.println("Не удалось синхронизировать команды с сервером");
@@ -57,56 +59,57 @@ public class CommandManager {
                 default -> System.out.println("Неизвестный тип команды, регистрация не удалась");
             }
         });
+        logger.info("Команды синхронизированы");
     }
 
     public boolean executeCommand(String line) {
         String[] tokens = line.split(" ");
         Command command = commands.get(tokens[0]);
-        if (command == null) {
-            // logger.warn("Пользователь ввел некорректную команду {}", tokens[0]);
+        if (command == null) { // если команда не найдена, то попытка синхронизации
             syncCommands();
             command = commands.get(tokens[0]);
             if (command == null) {
+                logger.warn("Пользователь ввел некорректную команду {}", tokens[0]);
                 System.out.println("Команда " + tokens[0] + " не найдена");
                 return true;
             }
         }
         if (command.getExpectArgs() != tokens.length-1) {
-            // logger.warn("Пользователь ввел неверное количество аргументов {} для команды {}", tokens.length-1, command.getName());
+            logger.warn("Пользователь ввел неверное количество аргументов {} для команды {}", tokens.length-1, command.getName());
             System.out.println("Ожидалось " + command.getExpectArgs() + " аргументов, получено " + (tokens.length-1));
             return true;
         }
         try {
-            // logger.debug("Начало выполнения команды {}", command.getName());
+            logger.debug("Начало выполнения команды {}", command.getName());
 
             Request request = command.execute(tokens);
 
-            if (request == null) return true;
+            if (request == null) return true; // для клиентских команд
 
             Response response = connectionManager.sendAndReceive(request);
             System.out.println("Статус: " + response.getType());
             System.out.println(response.getMessage());
 
-            if (response.getType() == ResponseType.OUTDATED) {
+            if (response.getType() == ResponseType.OUTDATED) { // если команда больше не поддерживается
                 syncCommands();
                 return true;
             }
-            addCommandToHistory(command.getName());
 
+            addCommandToHistory(command.getName());
             return true;
         } catch (ScriptExecutionException e) {
             return notifyError("Ошибка выполнения скрипта: " + e.getMessage(), e);
         } catch (NumberFormatException e) {
             return notifyError("Неверный формат числа", e);
         } catch (EndOfExecutionException e) {
-            // logger.info("Завершение программы", e);
+            logger.info("Завершение программы", e);
             System.out.println(e.getMessage());
             return false;
         }
     }
 
     private boolean notifyError(String message, Exception e) {
-        // logger.error(e.getMessage(), e);
+        logger.error(message, e);
         System.out.println(message);
         return true;
     }
@@ -116,6 +119,7 @@ public class CommandManager {
         if (commandsHistory.size() > 15) {
             commandsHistory.remove(0);
         }
+        logger.info("Команда {} добавлена в историю", commandName);
     }
 
     public String getFormattedCommandsList() {
@@ -136,7 +140,7 @@ public class CommandManager {
     }
 
     public void addCommand(Command command) {
-        // logger.debug("Регистрация новой команды: {}", command.getName());
+        logger.debug("Регистрация новой команды: {}", command.getName());
         Field[] fields = command.getClass().getDeclaredFields();
 
         for (Field field: fields) {
@@ -150,14 +154,14 @@ public class CommandManager {
                     continue;
                 }
                 field.set(command, toInject);
-                // logger.debug("В команду {} внедрен {}", command.getName(), field.getType().getSimpleName());
+                logger.debug("В команду {} внедрен {}", command.getName(), field.getType().getSimpleName());
 
             } catch (IllegalAccessException e) {
-                // logger.error("Не удалось внедрить зависимость в поле {}", field.getName(), e);
+                logger.error("Не удалось внедрить зависимость в поле {}", field.getName(), e);
             }
         }
         commands.put(command.getName(), command);
-        // logger.info("Команда {} зарегистрирована", command.getName());
+        logger.info("Команда {} зарегистрирована", command.getName());
     }
 
     private Object resolveDependency(Class<?> type) {

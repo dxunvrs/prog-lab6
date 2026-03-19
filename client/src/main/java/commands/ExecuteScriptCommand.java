@@ -17,7 +17,7 @@ public class ExecuteScriptCommand extends Command {
     @Override
     public Request execute(String[] tokens) {
         try {
-            inputManager.enqueueScript(tokens[1]);
+            inputManager.enqueueScript(tokens[1]); // добавление скрипта в очередь исполнения
             System.out.println("Начало выполнения скрипта: " + tokens[1]);
         } catch (IOException e) {
             throw new ScriptExecutionException("Ошибка чтения " + e.getMessage());

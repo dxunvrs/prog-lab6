@@ -9,6 +9,8 @@ import com.fasterxml.jackson.dataformat.csv.CsvReadException;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import models.Product;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -19,7 +21,8 @@ import java.time.format.DateTimeParseException;
 import java.util.Scanner;
 
 public class FileManager {
-    // private static final Logger logger = LoggerFactory.getLogger(FileManager.class);
+    private static final Logger logger = LoggerFactory.getLogger(FileManager.class);
+
     private final CsvMapper mapper = new CsvMapper();
     private final CsvSchema schema = mapper.schemaFor(Product.class);
 
@@ -49,27 +52,27 @@ public class FileManager {
             }
 
             collectionManager.initCollection(dateOfInit);
-            // logger.info("Коллекция из файла {} успешно загружена", fileName);
+            logger.info("Коллекция из файла {} успешно загружена", fileName);
             System.out.println("Коллекция из файла " + fileName + " успешно загружена");
 
         } catch (DateTimeParseException e) {
-            // logger.error("Не удалось распарсить дату", e);
+            logger.error("Не удалось распарсить дату", e);
             System.out.println("Неверный формат даты инициализации коллекции в файле, загрузка не удалась, создана новая коллекция");
 
         } catch (CsvReadException | JsonParseException e) {
-            // logger.error("Не удалось распарсить файл", e);
+            logger.error("Не удалось распарсить файл", e);
             System.out.println("Структура CSV не распознана, загрузка не удалась, создана новая коллекция");
 
         } catch (InvalidFormatException e) {
-            // logger.error("Не удалось распарсить данный тип", e);
+            logger.error("Не удалось распарсить данный тип", e);
             System.out.println("Неверный формат данных, загрузка не удалась, создана новая коллекция");
 
         } catch (DatabindException e) {
-            // logger.error("Ошибка маппинга полей", e);
+            logger.error("Ошибка маппинга полей", e);
             System.out.println("Ошибка маппинга полей, загрузка не удалась, создана новая коллекция");
 
         } catch (IOException e) {
-            // logger.error("Ошибка загрузки", e);
+            logger.error("Ошибка загрузки", e);
             System.out.println("Ошибка загрузки: " + e.getMessage());
             System.out.println("Создана новая коллекция");
         }
@@ -89,10 +92,10 @@ public class FileManager {
                     System.out.println("Ошибка сохранения: " + e.getMessage());
                 }
             });
+            logger.info("Коллекция успешно сохранена в файл: {}", fileName);
             System.out.println("Коллекция успешно сохранена в файл");
-            // logger.info("Коллекция успешно сохранена в файл: {}", fileName);
         } catch (IOException e) {
-            // logger.error("Ошибка сохранения", e);
+            logger.error("Ошибка сохранения", e);
             System.out.println("Ошибка сохранения: " + e.getMessage());
         }
     }

@@ -16,7 +16,7 @@ import java.util.function.Supplier;
 public class ConsoleReader implements Reader {
     private final LineReader reader;
     private final Terminal terminal;
-    private Set<String> suggestions;
+    private Set<String> suggestions; // список подсказок
     private boolean isCommandMode = false;
 
     public ConsoleReader(Supplier<Set<String>> commandsSupplier) throws IOException {
@@ -26,11 +26,13 @@ public class ConsoleReader implements Reader {
     }
 
     private Completer createCompleter(Supplier<Set<String>> commandsSupplier) {
-        ArgumentCompleter scriptCompleter = new ArgumentCompleter(
+        // автодополнение для команды скрипта: execute_script [FILE]
+        ArgumentCompleter scriptCompleter = new ArgumentCompleter( 
                 new StringsCompleter("execute_script"),
                 new Completers.FileNameCompleter()
         );
 
+        // автодополнение команд
         Completer simpleCommandsCompleter = (lineReader, parsedLine, list) -> {
             Set<String> currentCommands = commandsSupplier.get();
             for (String commandName: currentCommands) {
@@ -38,8 +40,10 @@ public class ConsoleReader implements Reader {
             }
         };
 
+        // для избежания повтора автодополнений
         ArgumentCompleter strictCommandsCompleter = new ArgumentCompleter(simpleCommandsCompleter, new NullCompleter());
 
+        // Completer Proxy
         return ((lineReader, parsedLine, list) -> {
             if (suggestions != null && !suggestions.isEmpty()) {
                 suggestions.forEach(s -> list.add(new Candidate(s)));
