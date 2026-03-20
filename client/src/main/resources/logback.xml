@@ -3,7 +3,7 @@
         <file>logs/client.log</file>
 
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>logs/archived/all-%d{yyyy-MM-dd_HH-mm}.%i.log</fileNamePattern>
+            <fileNamePattern>logs/archived/client-%d{yyyy-MM-dd_HH-mm}.%i.log</fileNamePattern>
 
             <maxFileSize>5MB</maxFileSize>
 

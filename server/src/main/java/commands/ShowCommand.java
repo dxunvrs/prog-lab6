@@ -5,12 +5,15 @@ import network.Request;
 import network.Response;
 import network.ResponseType;
 
+import java.util.List;
+
 public class ShowCommand extends Command {
     @Inject
     private CollectionManager collectionManager;
 
     public ShowCommand() {
-        super("show", "show - вывод элементов коллекции", CommandType.NO_ARGS);
+        super("show", "show - вывод элементов коллекции",
+                List.of(ArgType.NONE));
     }
 
     @Override

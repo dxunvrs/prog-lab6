@@ -18,12 +18,12 @@ import java.util.stream.Collectors;
 public class Form {
     private static final Logger logger = LoggerFactory.getLogger(Form.class);
 
-    private final InputManager reader;
+    private final InputManager inputManager;
     private final boolean scriptMode;
 
-    public Form(InputManager reader) {
-        this.reader = reader;
-        this.scriptMode = reader.isScriptMode();
+    public Form(InputManager inputManager) {
+        this.inputManager = inputManager;
+        this.scriptMode = inputManager.isScriptMode();
     }
 
     protected <T> T ask(Class<T> type, String name, Validator<T> validator) {
@@ -31,7 +31,7 @@ public class Form {
         while (true) {
             try {
                 logger.info("У пользователя запрашивается {} типа {}", name, type.getSimpleName());
-                result = map(type, reader.readNextLine("Введите " + name + ": ", getSuggestions(type)));
+                result = map(type, inputManager.readNextLine("Введите " + name + ": ", getSuggestions(type)));
                 if (validator.validate(result)) {
                     if (scriptMode) System.out.println(result);
                     break;

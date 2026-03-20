@@ -73,6 +73,7 @@ public class Server {
     private void registerAllCommands() {
         commandHandler.addCommand(new AddCommand());
         commandHandler.addCommand(new AverageOfPriceCommand());
+        commandHandler.addCommand(new ClearCommand());
         commandHandler.addCommand(new FilterStartsWithNameCommand());
         commandHandler.addCommand(new InfoCommand());
         commandHandler.addCommand(new RemoveCommand());

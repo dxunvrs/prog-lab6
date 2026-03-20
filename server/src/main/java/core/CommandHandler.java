@@ -56,7 +56,7 @@ public class CommandHandler {
     private Response syncCommands() {
         Map<String, CommandDef> commandDefMap = new HashMap<>();
         commands.forEach((name, serverCommand) ->
-            commandDefMap.put(name, new CommandDef(serverCommand.getName(), serverCommand.getDescription(), serverCommand.getType()))
+            commandDefMap.put(name, new CommandDef(serverCommand.getName(), serverCommand.getDescription(), serverCommand.getExpectedArgs()))
         );
         Response response = new Response(ResponseType.SYNC_DATA, "Актуальные команды");
         response.setSyncData(commandDefMap);

@@ -1,6 +1,7 @@
 package commands;
 
 import core.CommandManager;
+import exceptions.InvalidArgumentException;
 import network.Request;
 
 public class HistoryCommand extends Command {
@@ -8,12 +9,20 @@ public class HistoryCommand extends Command {
     private CommandManager commandManager;
 
     public HistoryCommand() {
-        super("history", "history - последние 15 команд", 0);
+        super("history", "history - последние 15 команд");
     }
 
     @Override
     public Request execute(String[] tokens) {
+        if (tokens.length != 1) {
+            throw new InvalidArgumentException("Слишком много аргументов для команды history");
+        }
         System.out.println(commandManager.getFormattedHistory());
         return null;
+    }
+
+    @Override
+    public String getSyntax() {
+        return "history [NONE]";
     }
 }

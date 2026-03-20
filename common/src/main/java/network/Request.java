@@ -3,14 +3,17 @@ package network;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import models.Product;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Request {
     private String commandName;
     private RequestType type;
 
-    private String stringArg;
-    private Product objectArg;
-    private int intArg;
+    private final List<String> stringArgs = new ArrayList<>();
+    private final List<Integer> intArgs = new ArrayList<>();
+    private final List<Product> objectArgs = new ArrayList<>();
 
     public Request() {}
 
@@ -27,27 +30,27 @@ public class Request {
         return type;
     }
 
-    public String getStringArg() {
-        return stringArg;
+    public void addStringArg(String value) {
+        stringArgs.add(value);
     }
 
-    public Product getObjectArg() {
-        return objectArg;
+    public void addIntArg(int value) {
+        intArgs.add(value);
     }
 
-    public int getIntArg() {
-        return intArg;
+    public void addObjectArg(Product value) {
+        objectArgs.add(value);
     }
 
-    public void setStringArg(String value) {
-        stringArg = value;
+    public List<String> getStringArgs() {
+        return stringArgs;
     }
 
-    public void setObjectArg(Product value) {
-        objectArg = value;
+    public List<Integer> getIntArgs() {
+        return intArgs;
     }
 
-    public void setIntArg(int value) {
-        intArg = value;
+    public List<Product> getObjectArgs() {
+        return objectArgs;
     }
 }

@@ -9,8 +9,8 @@ import models.UnitOfMeasure;
 import java.time.LocalDate;
 
 public class ProductForm extends Form {
-    public ProductForm(InputManager reader) {
-        super(reader);
+    public ProductForm(InputManager inputManager) {
+        super(inputManager);
     }
 
     public Product getProduct() {

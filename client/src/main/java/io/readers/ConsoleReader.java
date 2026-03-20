@@ -26,12 +26,6 @@ public class ConsoleReader implements Reader {
     }
 
     private Completer createCompleter(Supplier<Set<String>> commandsSupplier) {
-        // автодополнение для команды скрипта: execute_script [FILE]
-        ArgumentCompleter scriptCompleter = new ArgumentCompleter( 
-                new StringsCompleter("execute_script"),
-                new Completers.FileNameCompleter()
-        );
-
         // автодополнение команд
         Completer simpleCommandsCompleter = (lineReader, parsedLine, list) -> {
             Set<String> currentCommands = commandsSupplier.get();
@@ -39,6 +33,19 @@ public class ConsoleReader implements Reader {
                 list.add(new Candidate(commandName));
             }
         };
+
+        // автодополнение для команды скрипта: execute_script [FILE_NAME]
+        ArgumentCompleter scriptCompleter = new ArgumentCompleter( 
+                new StringsCompleter("execute_script"),
+                new Completers.FileNameCompleter()
+        );
+
+        // автодополнение для команды help: help [COMMAND_NAME]
+        ArgumentCompleter helpCompleter = new ArgumentCompleter(
+                new StringsCompleter("help"),
+                simpleCommandsCompleter,
+                new NullCompleter()
+        );
 
         // для избежания повтора автодополнений
         ArgumentCompleter strictCommandsCompleter = new ArgumentCompleter(simpleCommandsCompleter, new NullCompleter());
@@ -51,7 +58,7 @@ public class ConsoleReader implements Reader {
             if (!isCommandMode) {
                 return;
             }
-            new AggregateCompleter(scriptCompleter, strictCommandsCompleter).complete(
+            new AggregateCompleter(scriptCompleter, helpCompleter, strictCommandsCompleter).complete(
                     lineReader, parsedLine, list
             );
         });

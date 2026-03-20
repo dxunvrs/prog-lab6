@@ -3,15 +3,17 @@ package commands;
 import network.Request;
 import network.Response;
 
+import java.util.List;
+
 public abstract class Command {
     private final String name;
     private final String description;
-    private final CommandType type;
+    private final List<ArgType> expectedArgs;
 
-    public Command(String name, String description, CommandType type) {
+    public Command(String name, String description, List<ArgType> expectedArgs) {
         this.name = name;
         this.description = description;
-        this.type = type;
+        this.expectedArgs = expectedArgs;
     }
 
     public abstract Response execute(Request request);
@@ -24,7 +26,7 @@ public abstract class Command {
         return description;
     }
 
-    public CommandType getType() {
-        return type;
+    public List<ArgType> getExpectedArgs() {
+        return expectedArgs;
     }
 }

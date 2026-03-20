@@ -2,6 +2,7 @@ package core;
 
 import commands.*;
 import exceptions.EndOfExecutionException;
+import exceptions.InvalidArgumentException;
 import exceptions.ScriptExecutionException;
 import io.InputManager;
 import network.Request;
@@ -49,16 +50,8 @@ public class CommandManager {
             System.out.println("Не удалось синхронизировать команды с сервером");
             return;
         }
-        response.getSyncData().forEach((name, commandDef) -> {
-            switch (commandDef.type()) {
-                case NO_ARGS -> addCommand(new NoArgsCommand(name, commandDef.description()));
-                case STRING_ARG -> addCommand(new StringArgCommand(name, commandDef.description()));
-                case INT_ARG -> addCommand(new IntArgCommand(name, commandDef.description()));
-                case OBJECT_ARG -> addCommand(new ObjectArgCommand(name, commandDef.description()));
-                case MIXED_ARGS -> addCommand(new MixedArgsCommand(name, commandDef.description()));
-                default -> System.out.println("Неизвестный тип команды, регистрация не удалась");
-            }
-        });
+        response.getSyncData().forEach((name, commandDef) ->
+                addCommand(new ServerCommand(name, commandDef.description(), commandDef.expectedArgs())));
         logger.info("Команды синхронизированы");
     }
 
@@ -73,11 +66,6 @@ public class CommandManager {
                 System.out.println("Команда " + tokens[0] + " не найдена");
                 return true;
             }
-        }
-        if (command.getExpectArgs() != tokens.length-1) {
-            logger.warn("Пользователь ввел неверное количество аргументов {} для команды {}", tokens.length-1, command.getName());
-            System.out.println("Ожидалось " + command.getExpectArgs() + " аргументов, получено " + (tokens.length-1));
-            return true;
         }
         try {
             logger.debug("Начало выполнения команды {}", command.getName());
@@ -97,10 +85,10 @@ public class CommandManager {
 
             addCommandToHistory(command.getName());
             return true;
+        } catch (InvalidArgumentException e) {
+            return notifyError("Ошибка в аргументах: " + e.getMessage(), e);
         } catch (ScriptExecutionException e) {
             return notifyError("Ошибка выполнения скрипта: " + e.getMessage(), e);
-        } catch (NumberFormatException e) {
-            return notifyError("Неверный формат числа", e);
         } catch (EndOfExecutionException e) {
             logger.info("Завершение программы", e);
             System.out.println(e.getMessage());
@@ -120,6 +108,12 @@ public class CommandManager {
             commandsHistory.remove(0);
         }
         logger.info("Команда {} добавлена в историю", commandName);
+    }
+
+    public String getFormattedCommandSyntax(String commandName) {
+        Command command = commands.get(commandName);
+        if (command != null) return command.getSyntax();
+        return null;
     }
 
     public String getFormattedCommandsList() {

@@ -1,4 +1,6 @@
 package commands;
 
-public record CommandDef(String name, String description, CommandType type) {
+import java.util.List;
+
+public record CommandDef(String name, String description, List<ArgType> expectedArgs) {
 }

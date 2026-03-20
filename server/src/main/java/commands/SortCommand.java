@@ -5,12 +5,15 @@ import network.Request;
 import network.Response;
 import network.ResponseType;
 
+import java.util.List;
+
 public class SortCommand extends Command {
     @Inject
     private CollectionManager collectionManager;
 
     public SortCommand() {
-        super("sort", "sort - сортировка коллекции в естественном порядке (по id)", CommandType.NO_ARGS);
+        super("sort", "sort - сортировка коллекции в естественном порядке (по id)",
+                List.of(ArgType.NONE));
     }
 
     @Override

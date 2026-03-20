@@ -5,12 +5,14 @@ import network.Request;
 import network.Response;
 import network.ResponseType;
 
+import java.util.List;
+
 public class ClearCommand extends Command {
     @Inject
     private CollectionManager collectionManager;
 
     public ClearCommand() {
-        super("clear", "clear - очистить коллекцию", CommandType.NO_ARGS);
+        super("clear", "clear - очистить коллекцию", List.of(ArgType.NONE));
     }
 
     @Override

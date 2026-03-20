@@ -5,12 +5,15 @@ import network.Request;
 import network.Response;
 import network.ResponseType;
 
+import java.util.List;
+
 public class SumOfPriceCommand extends Command {
     @Inject
     private CollectionManager collectionManager;
 
     public SumOfPriceCommand() {
-        super("sum_of_price", "sum_of_price - вывести сумму цен всех элементов коллекции", CommandType.NO_ARGS);
+        super("sum_of_price", "sum_of_price - вывести сумму цен всех элементов коллекции",
+                List.of(ArgType.NONE));
     }
 
     @Override
