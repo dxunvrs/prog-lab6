@@ -12,6 +12,8 @@ import org.slf4j.LoggerFactory;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -31,7 +33,7 @@ public class Form {
         while (true) {
             try {
                 logger.info("У пользователя запрашивается {} типа {}", name, type.getSimpleName());
-                result = map(type, inputManager.readNextLine("Введите " + name + ": ", getSuggestions(type)));
+                result = map(type, inputManager.readNextLine("Введите " + name + ": ", getSuggestions(type)).trim());
                 if (validator.validate(result)) {
                     if (scriptMode) System.out.println(result);
                     break;
@@ -73,6 +75,7 @@ public class Form {
     private <T> Set<String> getSuggestions(Class<T> type) {
         return switch (type.getSimpleName()) {
             case "UnitOfMeasure" -> Arrays.stream(UnitOfMeasure.values()).map(Enum::name).collect(Collectors.toSet());
+            case "LocalDate" -> Set.of(LocalDate.now().toString());
             default -> null;
         };
     }

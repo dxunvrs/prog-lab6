@@ -14,6 +14,7 @@ public class ProductForm extends Form {
     }
 
     public Product getProduct() {
+        System.out.println("Запрос продукта");
         String name = ask(String.class, "название", value -> {
             if (value == null) {
                 System.out.println("Имя не может быть пустым");

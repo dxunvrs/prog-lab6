@@ -28,6 +28,7 @@ public class CommandManager {
         addCommand(new ExitCommand());
         addCommand(new HistoryCommand());
         addCommand(new ExecuteScriptCommand());
+        // addCommand(new ServerCommand("test", "test - команда для теста", List.of(ArgType.INT, ArgType.OBJECT, ArgType.INT)));
 
         syncCommands();
     }

@@ -32,11 +32,11 @@ public class ServerCommand extends Command {
                 switch (argType) {
                     case STR -> request.addStringArg(tokens[index]);
                     case INT -> request.addIntArg(Integer.parseInt(tokens[index]));
-                    case OBJECT -> {
-                        index++;
+                    case OBJECT ->  {
+                        index--;
                         request.addObjectArg(new ProductForm(inputManager).getProduct());
                     }
-                    case NONE -> index++;
+                    case NONE -> index--;
                 }
                 index++;
             }

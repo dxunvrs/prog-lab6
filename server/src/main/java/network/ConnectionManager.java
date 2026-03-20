@@ -73,7 +73,7 @@ public class ConnectionManager implements AutoCloseable {
             readBuffer.get(data);
 
             Request request = mapper.readValue(data, Request.class);
-            logger.info("Получен новый запрос от {}, сообщение: {}", clientAddress, new String(data));
+            logger.info("Получен новый запрос от {}, вес: {} байт, сообщение: {}", clientAddress, data.length, new String(data));
             System.out.println("Новый запрос");
             System.out.println("От: " + clientAddress);
             System.out.println("JSON: " + new String(data));
@@ -91,7 +91,7 @@ public class ConnectionManager implements AutoCloseable {
         ByteBuffer buffer = ByteBuffer.wrap(data);
 
         channel.send(buffer, clientAddress);
-        logger.info("Отправлен ответ на {}, сообщение: {}", clientAddress, new String(data));
+        logger.info("Отправлен ответ на {}, вес: {} байт, сообщение: {}", clientAddress, data.length, new String(data));
     }
 
     public void stop() {
