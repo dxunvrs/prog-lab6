@@ -1,9 +1,8 @@
-package core;
+package network;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import network.Request;
-import network.Response;
+import core.CommandHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,4 +1,4 @@
-package core;
+package io;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.DatabindException;
@@ -8,6 +8,7 @@ import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvReadException;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import core.CollectionManager;
 import models.Product;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

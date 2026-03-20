@@ -1,6 +1,8 @@
 package core;
 
 import commands.*;
+import io.FileManager;
+import network.ConnectionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

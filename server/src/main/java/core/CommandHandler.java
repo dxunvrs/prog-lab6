@@ -50,6 +50,8 @@ public class CommandHandler {
             return command.execute(request);
         } catch (IdNotFoundException e) {
             return handleError(e.getMessage(), e);
+        } catch (Exception e) {
+            return handleError("Неизвестная ошибка", e);
         }
     }
 

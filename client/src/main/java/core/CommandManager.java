@@ -5,10 +5,7 @@ import exceptions.EndOfExecutionException;
 import exceptions.InvalidArgumentException;
 import exceptions.ScriptExecutionException;
 import io.InputManager;
-import network.Request;
-import network.RequestType;
-import network.Response;
-import network.ResponseType;
+import network.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
