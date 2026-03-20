@@ -7,7 +7,7 @@
 
             <maxFileSize>5MB</maxFileSize>
 
-            <maxHistory>30</maxHistory>
+            <maxHistory>1500</maxHistory>
 
             <totalSizeCap>100MB</totalSizeCap>
         </rollingPolicy>
