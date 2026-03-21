@@ -23,16 +23,6 @@ public class CommandManager {
     private InputManager inputManager;
     private ConnectionManager connectionManager;
 
-    public void configure() {
-        addCommand(new HelpCommand());
-        addCommand(new ExitCommand());
-        addCommand(new HistoryCommand());
-        addCommand(new ExecuteScriptCommand());
-        // addCommand(new ServerCommand("test", "test - команда для теста", List.of(ArgType.INT, ArgType.OBJECT, ArgType.INT)));
-
-        syncCommands();
-    }
-
     public void setInputManager(InputManager inputManager) {
         this.inputManager = inputManager;
     }
@@ -41,13 +31,20 @@ public class CommandManager {
         this.connectionManager = connectionManager;
     }
 
-    private void syncCommands() {
+    public void syncCommands() {
+        commands.clear();
+        addCommand(new HelpCommand());
+        addCommand(new ExitCommand());
+        addCommand(new HistoryCommand());
+        addCommand(new ExecuteScriptCommand());
+
         logger.debug("Запущена синхронизация команд");
         Response response = connectionManager.sendAndReceive(new Request(RequestType.SYNC, "get_commands"));
         if (response.getType() != ResponseType.SYNC_DATA) {
             System.out.println("Не удалось синхронизировать команды с сервером");
             return;
         }
+
         response.getSyncData().forEach((name, commandDef) ->
                 addCommand(new ServerCommand(name, commandDef.description(), commandDef.expectedArgs())));
         logger.info("Команды синхронизированы");

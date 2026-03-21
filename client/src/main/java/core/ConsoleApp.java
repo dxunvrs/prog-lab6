@@ -21,7 +21,7 @@ public class ConsoleApp {
             ConnectionManager connectionManager = new ConnectionManager("localhost", 1234);
             commandManager.setConnectionManager(connectionManager);
             commandManager.setInputManager(inputManager);
-            commandManager.configure();
+            commandManager.syncCommands();
         } catch (SocketException e) {
             logger.error("Ошибка открытия сокета: {}", e.getMessage(), e);
             System.out.println("Ошибка сокета: " + e.getMessage());
